@@ -6,10 +6,17 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <ostream>
+#include <print>
 #include <sstream>
 #include <vector>
 
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/scalar_constants.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/trigonometric.hpp"
+
+int WIDTH = 800, HEIGHT = 600;
 
 std::string read_file(std::string file_name) {
     std::ifstream file(file_name);
@@ -49,7 +56,11 @@ std::pair<std::vector<float>, std::vector<int>> get_circle_vertices(float cx, fl
 
     return {circle_vertices, circle_indices};
 }
-void resize_callback(GLFWwindow *_, int width, int height) { glViewport(0, 0, width, height); }
+void resize_callback(GLFWwindow *_, int width, int height) {
+    WIDTH = width;
+    HEIGHT = height;
+    glViewport(0, 0, WIDTH, HEIGHT);
+}
 
 void process_input(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -58,8 +69,6 @@ void process_input(GLFWwindow *window) {
 }
 
 int main() {
-    int WIDTH = 800, HEIGHT = 600;
-
     if (!glfwInit()) {
         std::cerr << "failed to initialize glfw";
         return -1;
@@ -75,7 +84,7 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
-    glfwSetWindowSizeCallback(window, resize_callback);
+    glfwSetFramebufferSizeCallback(window, resize_callback);
 
     if (!gladLoadGL(glfwGetProcAddress)) {
         std::cerr << "failed to load glad opengl stuff";
@@ -155,16 +164,39 @@ int main() {
     glDeleteShader(VERTEX_SHADER);
     glDeleteShader(FRAGMENT_SHADER);
 
+    glm::mat4 view(1);
+    view = glm::translate(view, {0, 0, -3});
+    std::vector<glm::vec3> positions = {glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
+                                        glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
+                                        glm::vec3(2.4f, -0.4f, -3.5f),  glm::vec3(-1.7f, 3.0f, -7.5f),
+                                        glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
+                                        glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
+
     while (!glfwWindowShouldClose(window)) {
         process_input(window);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glm::mat4 proj = glm::perspective(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+
         glUseProgram(SHADER_PROGRAM);
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, circle_indices.size(), GL_UNSIGNED_INT, 0);
 
-        glfwPollEvents();
+        glUniformMatrix4fv(glGetUniformLocation(SHADER_PROGRAM, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
+        glUniformMatrix4fv(glGetUniformLocation(SHADER_PROGRAM, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
+        for (int i = 0; i < 10; i++) {
+            glm::mat4 model(1);
+            model = glm::translate(model, positions[i]);
+            model = glm::rotate(model, glm::radians(100 * (float)glfwGetTime()), {1, 0, 1});
+            model = glm::scale(model, {0.5, 0.5, 1});
+
+            glUniformMatrix4fv(glGetUniformLocation(SHADER_PROGRAM, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+            glDrawElements(GL_TRIANGLES, circle_indices.size(), GL_UNSIGNED_INT, 0);
+        }
+
         glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
     glDeleteProgram(SHADER_PROGRAM);
