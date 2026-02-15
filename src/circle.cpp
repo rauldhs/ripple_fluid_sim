@@ -6,14 +6,14 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <vector>
 
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-std::map<CircleParams, std::shared_ptr<CircleGeometry>> Circle::geometry_cache;
+std::shared_ptr<std::map<CircleParams, std::shared_ptr<CircleGeometry>>> Circle::geometry_cache;
 std::shared_ptr<unsigned int> Circle::SHADER_PROGRAM = nullptr;
-
 // explanation: https://siegelord.net/circle_draw
 void CircleGeometry::tessellate(float cx, float cy, float r, size_t num_segments) {
     vertices.reserve((num_segments + 1) * 3);
@@ -70,10 +70,14 @@ std::vector<int> CircleGeometry::get_indices() { return indices; }
 Circle::Circle(float cx, float cy, float r, size_t num_segments) {
     params = CircleParams{cx, cy, r, num_segments};
 
-    auto it = geometry_cache.find(params);
-    if (it == geometry_cache.end()) {
+    if (!geometry_cache) {
+        geometry_cache = std::make_shared<std::map<CircleParams, std::shared_ptr<CircleGeometry>>>();
+    }
+
+    auto it = (*geometry_cache).find(params);
+    if (it == (*geometry_cache).end()) {
         auto geometry = std::make_shared<CircleGeometry>(params);
-        geometry_cache[params] = geometry;
+        (*geometry_cache)[params] = geometry;
     }
 
     if (!SHADER_PROGRAM) {
@@ -83,13 +87,22 @@ Circle::Circle(float cx, float cy, float r, size_t num_segments) {
     model = glm::mat4(1.0f);
 }
 
+Circle::~Circle() {
+    if (SHADER_PROGRAM.use_count() == 1) {
+        SHADER_PROGRAM.reset();
+    }
+    if (geometry_cache.use_count() == 1) {
+        geometry_cache.reset();
+    }
+}
+
 void Circle::draw() {
     glUseProgram(*SHADER_PROGRAM);
 
     glUniformMatrix4fv(glGetUniformLocation(*SHADER_PROGRAM, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-    glBindVertexArray(geometry_cache[params]->get_vao());
-    glDrawElements(GL_TRIANGLES, static_cast<int>(geometry_cache[params]->get_indices().size()), GL_UNSIGNED_INT, 0);
+    glBindVertexArray((*geometry_cache)[params]->get_vao());
+    glDrawElements(GL_TRIANGLES, static_cast<int>((*geometry_cache)[params]->get_indices().size()), GL_UNSIGNED_INT, 0);
 }
 
 void Circle::make_shader_program() {
@@ -109,15 +122,11 @@ void Circle::make_shader_program() {
         GLint logLength;
         glGetShaderiv(VERTEX_SHADER, GL_INFO_LOG_LENGTH, &logLength);
 
-        std::vector<char> errorLog(logLength);
+        std::vector<char> errorLog(static_cast<uint64_t>(logLength));
         glGetShaderInfoLog(VERTEX_SHADER, logLength, nullptr, errorLog.data());
 
-        std::cerr << "Shader compilation failed:\n" << errorLog.data() << std::endl;
-
         glDeleteShader(VERTEX_SHADER);
-        // TODO(me): throw error
-        //   glfwTerminate();
-        //   return -1;
+        throw std::runtime_error("failed to compile VERTEX SHADER for circle class: " + std::string(errorLog.data()));
     }
 
     unsigned int FRAGMENT_SHADER = glCreateShader(GL_FRAGMENT_SHADER);
@@ -130,23 +139,20 @@ void Circle::make_shader_program() {
         GLint logLength;
         glGetShaderiv(FRAGMENT_SHADER, GL_INFO_LOG_LENGTH, &logLength);
 
-        std::vector<char> errorLog(logLength);
+        std::vector<char> errorLog(static_cast<uint64_t>(logLength));
         glGetShaderInfoLog(FRAGMENT_SHADER, logLength, nullptr, errorLog.data());
-
-        std::cerr << "Shader compilation failed:\n" << errorLog.data() << std::endl;
 
         glDeleteShader(VERTEX_SHADER);
         glDeleteShader(FRAGMENT_SHADER);
-        // TODO(me): throw error
-        //  glfwTerminate();
-        //  return -1;
+
+        throw std::runtime_error("failed to compile FRAGMENT SHADER for circle class: " + std::string(errorLog.data()));
     }
 
-    // TODO(me): cehck how this works
     SHADER_PROGRAM = std::shared_ptr<unsigned int>(new unsigned int(glCreateProgram()), [](unsigned int *ptr) {
         glDeleteProgram(*ptr);
         delete ptr;
     });
+
     glAttachShader(*SHADER_PROGRAM, VERTEX_SHADER);
     glAttachShader(*SHADER_PROGRAM, FRAGMENT_SHADER);
     glLinkProgram(*SHADER_PROGRAM);
@@ -165,5 +171,5 @@ std::string Circle::read_file(std::string file_name) {
 void Circle::move(glm::vec3 pos) { model = glm::translate(model, pos); }
 void Circle::rotate(float deg, glm::vec3 axis) { model = glm::rotate(model, glm::radians(deg), axis); }
 void Circle::scale(glm::vec3 scale) { model = glm::scale(model, scale); }
-unsigned int Circle::get_shader_program() { return *SHADER_PROGRAM; }
+std::shared_ptr<unsigned int> Circle::get_shader_program() { return SHADER_PROGRAM; }
 void Circle::reset() { model = glm::mat4(1); }

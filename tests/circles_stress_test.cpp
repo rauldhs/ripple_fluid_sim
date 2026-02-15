@@ -101,8 +101,8 @@ int main() {
         process_input(window);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        float time = (float)glfwGetTime();
-        glm::mat4 proj = glm::perspective(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+        float time = static_cast<float>(glfwGetTime());
+        glm::mat4 proj = glm::perspective(45.0f, static_cast<float>(WIDTH) / static_cast<float>(HEIGHT), 0.1f, 100.0f);
 
         glUseProgram(SHADER_PROGRAM);
         glUniformMatrix4fv(glGetUniformLocation(SHADER_PROGRAM, "proj"), 1, GL_FALSE, glm::value_ptr(proj));

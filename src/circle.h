@@ -38,9 +38,8 @@ class CircleGeometry {
 
 class Circle {
    private:
-    // TODO(me): make it static
     static std::shared_ptr<unsigned int> SHADER_PROGRAM;
-    static std::map<CircleParams, std::shared_ptr<CircleGeometry>> geometry_cache;
+    static std::shared_ptr<std::map<CircleParams, std::shared_ptr<CircleGeometry>>> geometry_cache;
 
     CircleParams params;
 
@@ -53,7 +52,9 @@ class Circle {
     Circle() : Circle(0.0f, 0.0f, 1.0f, 50) {};
     Circle(float cx, float cy, float r, size_t num_segments);
 
-    unsigned int get_shader_program();
+    ~Circle();
+
+    std::shared_ptr<unsigned int> get_shader_program();
 
     void move(glm::vec3 pos);
     void rotate(float deg, glm::vec3 axis);

@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <glm/glm.hpp>
 #include <iostream>
-#include <vector>
 
 #include "circle.h"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -52,28 +51,34 @@ int main() {
     }
     glViewport(0, 0, WIDTH, HEIGHT);
 
-    Circle circle;
+    {
+        Circle circle;
 
-    glm::mat4 view(1);
-    view = glm::translate(view, {0, 0, -3});
+        glm::mat4 view(1);
+        view = glm::translate(view, {0, 0, -3});
+        auto SHADER_PROGRAM = circle.get_shader_program();
 
-    unsigned int SHADER_PROGRAM = circle.get_shader_program();
+        while (!glfwWindowShouldClose(window)) {
+            process_input(window);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-    while (!glfwWindowShouldClose(window)) {
-        process_input(window);
-        glClear(GL_COLOR_BUFFER_BIT);
+            glm::mat4 proj =
+                glm::perspective(45.0f, static_cast<float>(WIDTH) / static_cast<float>(HEIGHT), 0.1f, 100.0f);
 
-        glm::mat4 proj = glm::perspective(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+            glUseProgram(*SHADER_PROGRAM);
+            glUniformMatrix4fv(glGetUniformLocation(*SHADER_PROGRAM, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
+            glUniformMatrix4fv(glGetUniformLocation(*SHADER_PROGRAM, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
-        glUseProgram(SHADER_PROGRAM);
-        glUniformMatrix4fv(glGetUniformLocation(SHADER_PROGRAM, "proj"), 1, GL_FALSE, glm::value_ptr(proj));
-        glUniformMatrix4fv(glGetUniformLocation(SHADER_PROGRAM, "view"), 1, GL_FALSE, glm::value_ptr(view));
+            circle.reset();
+            circle.scale({0.3, 0.3, 1});
 
-        circle.draw();
+            circle.draw();
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+        }
     }
 
+    glfwDestroyWindow(window);
     glfwTerminate();
 }

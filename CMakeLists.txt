@@ -71,14 +71,14 @@ target_include_directories(glad PUBLIC external/glad/include external/stb)
 file(GLOB_RECURSE SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-add_executable(circles_stress_test
-    tests/circles_stress_test.cpp
-    src/circle.cpp
-)
-target_link_libraries(circles_stress_test PRIVATE glfw glad glm::glm)
-target_include_directories(circles_stress_test
-    PRIVATE src external/glad/include
-)
+#add_executable(circles_stress_test
+#    tests/circles_stress_test.cpp
+#    src/circle.cpp
+#)
+#target_link_libraries(circles_stress_test PRIVATE glfw glad glm::glm)
+#target_include_directories(circles_stress_test
+#    PRIVATE src external/glad/include
+#)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm::glm)
 target_include_directories(${PROJECT_NAME}
