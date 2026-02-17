@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 4.2)
-
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_CXX_COMPILER clang++)
-
 project(fluid_sim VERSION 1.0 LANGUAGES C CXX)
-
-
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -61,7 +57,6 @@ endif()
 
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
 add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 
@@ -71,16 +66,15 @@ target_include_directories(glad PUBLIC external/glad/include external/stb)
 file(GLOB_RECURSE SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-#add_executable(circles_stress_test
-#    tests/circles_stress_test.cpp
-#    src/circle.cpp
-#)
-#target_link_libraries(circles_stress_test PRIVATE glfw glad glm::glm)
-#target_include_directories(circles_stress_test
-#    PRIVATE src external/glad/include
-#)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm::glm)
 target_include_directories(${PROJECT_NAME}
     PRIVATE src external/glad/include
 )
+
+# ----------------------------------------------------
+# AddressSanitizer - only for executables
+# ----------------------------------------------------
+set(ASAN_FLAGS -fsanitize=address -fno-omit-frame-pointer)
+target_compile_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})
+target_link_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})
