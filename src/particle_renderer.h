@@ -21,17 +21,21 @@ class ParticleRenderer {
    private:
     int width = 800, height = 600;
 
-    unsigned int VAO, VBO, EBO;
+    unsigned int VAO, VBO, instanceVBO, EBO;
+
+    int proj_uniform_location, view_uniform_location, model_uniform_location;
+
     unsigned int SHADER_PROGRAM;
+
     glm::mat4 model = glm::mat4(1), view = glm::translate(glm::mat4(1), {0, 0, -3}),
               proj = glm::perspective(45.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
 
     GLFWwindow* window;
 
     std::vector<float> vertices;
-    std::vector<int> indices;
+    std::vector<unsigned int> indices;
 
-    std::vector<Particle> particles;
+    std::vector<Particle> particles = {Particle{{0, 0, 0}}};
 
     static void resize_callback(GLFWwindow* window, int width, int height);
     void process_input(GLFWwindow* window);
