@@ -64,11 +64,25 @@ add_subdirectory(external/glm)
 add_library(glad STATIC external/glad/src/gl.c)
 target_include_directories(glad PUBLIC external/glad/include external/stb)
 
+add_library(imgui STATIC
+    external/imgui/imgui.cpp
+    external/imgui/imgui_draw.cpp
+    external/imgui/imgui_tables.cpp
+    external/imgui/imgui_widgets.cpp
+    external/imgui/backends/imgui_impl_glfw.cpp
+    external/imgui/backends/imgui_impl_opengl3.cpp
+)
+target_include_directories(imgui PUBLIC
+    external/imgui
+    external/imgui/backends
+)
+target_link_libraries(imgui PUBLIC glfw)
+
 file(GLOB_RECURSE SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm::glm)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad glm::glm imgui)
 target_include_directories(${PROJECT_NAME}
     PRIVATE src external/glad/include
 )
