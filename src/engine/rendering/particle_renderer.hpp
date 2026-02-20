@@ -48,6 +48,7 @@ class ParticleRenderer {
     ~ParticleRenderer();
 
     void update_particles(std::vector<Particle>& particles);
+    void update_proj_matrix(CameraRenderData camera_render_data);
 
     void draw(const CameraRenderData& camera_render_data);
 };

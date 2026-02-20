@@ -111,5 +111,3 @@ void SphSimulation::regenerate_particles(std::vector<Particle> &particles, float
         }
     }
 }
-
-SphSimulation::SphSimulation() {}

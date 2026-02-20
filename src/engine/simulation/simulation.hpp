@@ -28,7 +28,6 @@ class SphSimulation {
     glm::vec3 BOX_START = {0.0f, 0.0f, 0.0f};
     glm::vec3 BOX_END = {200.0f, 100.0f, 100.0f};
 
-    SphSimulation();
     void update_particles(std::vector<Particle> &particles, float radius);
     void regenerate_particles(std::vector<Particle> &particles, float particle_spacing);
 };

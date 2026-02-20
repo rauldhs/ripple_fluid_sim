@@ -5,25 +5,26 @@
 //
 #include "engine/core/window.hpp"
 
+#include <functional>
 #include <memory>
 #include <stdexcept>
 
 #include "engine/core/input_manager.hpp"
 
 bool Window::should_close() { return glfwWindowShouldClose(window); }
+
+void Window::add_resize_listener(std::function<void(int width, int height)> callback) {
+    resize_listeners.push_back(std::move(callback));
+}
+
 void Window::resize_callback(GLFWwindow* window, int new_width, int new_height) {
     auto* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
     self->width = new_width;
     self->height = new_height;
 
-    //   self->proj = glm::perspective(45.0f, static_cast<float>(width_new) / static_cast<float>(height_new), 1.0f,
-    //   1000.0f);
-
-    //    glProgramUniformMatrix4fv(self->SHADER_PROGRAM, self->proj_uniform_location, 1, GL_FALSE,
-    //                              glm::value_ptr(self->proj));
-
     glViewport(0, 0, self->width, self->height);
+    for (auto& callback : self->resize_listeners) callback(self->width, self->height);
 }
 
 Window::Window(int height, int width, std::string name, std::shared_ptr<InputManager> input_manager = nullptr)

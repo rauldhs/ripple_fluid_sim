@@ -10,13 +10,16 @@
 App::App(const AppSpecification& app_spec)
     : app_spec(std::move(app_spec)),
       input_manager(std::make_shared<InputManager>()),
-      window(app_spec.height, app_spec.width, app_spec.name, input_manager) {}
+      window(app_spec.height, app_spec.width, app_spec.name, input_manager) {
+    simulation.regenerate_particles(particles, particle_spacing);
+
+    window.add_resize_listener([this](int w, int h) { camera.set_aspect_ratio(w, h); });
+    window.add_resize_listener([this](int, int) { particle_renderer.update_proj_matrix(camera.render_data); });
+}
 
 App::App() : App(AppSpecification()) {}
 
 void App::run() {
-    simulation.regenerate_particles(particles, particle_spacing);
-
     while (!window.should_close()) {
         simulation.update_particles(particles, particle_renderer.particle_radius);
         particle_renderer.update_particles(particles);

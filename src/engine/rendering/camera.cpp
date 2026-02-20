@@ -19,9 +19,11 @@ void Camera::update(const InputState& input_state) {
     render_data.view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
 
-void Camera::update_position(const InputState& input_state) {
-    float speed = 5000 /* TEMP * delta_time*/;
+void Camera::set_aspect_ratio(int width, int height) {
+    render_data.proj = glm::perspective(45.0f, static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
+}
 
+void Camera::update_position(const InputState& input_state) {
     if (input_state.move_forward) {
         cameraPos += cameraFront * speed;
     }

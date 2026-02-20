@@ -5,14 +5,9 @@
 #include "engine/core/input_manager.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-// TODO: this is temp
-// int width = 800;
-// int height = 600;
-
 struct CameraRenderData {
     glm::mat4 view = glm::translate(glm::mat4(1), {0, 0, 0}),
-              // TEMP
-        proj = glm::perspective(45.0f, static_cast<float>(800) / static_cast<float>(600), 1.0f, 1000.0f);
+              proj = glm::perspective(45.0f, static_cast<float>(800) / static_cast<float>(600), 1.0f, 1000.0f);
 };
 
 class Camera {
@@ -26,6 +21,8 @@ class Camera {
     bool first_mouse = true;
     bool was_locked = true;
 
+    float speed = 5000;
+
     void update_look(double x_pos, double y_pos);
     void update_position(const InputState& input_state);
 
@@ -33,4 +30,5 @@ class Camera {
     CameraRenderData render_data;
 
     void update(const InputState& input_state);
+    void set_aspect_ratio(int width, int height);
 };
