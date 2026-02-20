@@ -1,8 +1,8 @@
-#include "simulation.h"
+#include "engine/simulation/simulation.hpp"
 
 #include <vector>
 
-#include "kernels.h"
+#include "engine/simulation/kernels.hpp"
 
 void SphSimulation::apply_bounding_box_physics(std::vector<Particle> &particles, float radius, float energy_loss_factor,
                                                float ground_friction) {

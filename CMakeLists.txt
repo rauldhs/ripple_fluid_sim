@@ -90,6 +90,6 @@ target_include_directories(${PROJECT_NAME}
 # ----------------------------------------------------
 # AddressSanitizer - only for executables
 # ----------------------------------------------------
-#set(ASAN_FLAGS -fsanitize=address -fno-omit-frame-pointer)
-#target_compile_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})
-#target_link_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})
+set(ASAN_FLAGS -fsanitize=address -fno-omit-frame-pointer)
+target_compile_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})
+target_link_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})

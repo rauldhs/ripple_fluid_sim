@@ -1,8 +1,10 @@
+#pragma once
+
 #include <glm/glm.hpp>
 #include <random>
 
-#include "kernels.h"
-#include "particle_renderer.h"
+#include "engine/rendering/particle_renderer.hpp"
+#include "engine/simulation/kernels.hpp"
 
 class SphSimulation {
    private:

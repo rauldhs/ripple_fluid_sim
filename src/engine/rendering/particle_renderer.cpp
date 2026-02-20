@@ -1,4 +1,4 @@
-#include "particle_renderer.h"
+#include "engine/rendering/particle_renderer.hpp"
 
 #include <cstddef>
 #include <fstream>
@@ -9,51 +9,12 @@
 #include <stdexcept>
 #include <vector>
 
-#include "GLFW/glfw3.h"
+#include "engine/rendering/camera.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-
-void ParticleRenderer::initialize_glfw_window_context() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    window = glfwCreateWindow(width, height, "fluid_sim", NULL, NULL);
-    if (!window) {
-        throw std::runtime_error("failed to create glfw window");
-    }
-    glfwMakeContextCurrent(window);
-
-    glfwSwapInterval(0);
-    // TODO(me): this is very uggly, check better alternatives
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, resize_callback);
-    glfwSetCursorPosCallback(window, cursor_pos_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    if (!gladLoaderLoadGL()) {
-        throw std::runtime_error("failed to load opengl bindings");
-    }
-    glViewport(0, 0, width, height);
-}
-
-void ParticleRenderer::resize_callback(GLFWwindow* window, int width_new, int height_new) {
-    auto* self = static_cast<ParticleRenderer*>(glfwGetWindowUserPointer(window));
-
-    self->width = width_new;
-    self->height = height_new;
-
-    self->proj = glm::perspective(45.0f, static_cast<float>(width_new) / static_cast<float>(height_new), 1.0f, 1000.0f);
-
-    glProgramUniformMatrix4fv(self->SHADER_PROGRAM, self->proj_uniform_location, 1, GL_FALSE,
-                              glm::value_ptr(self->proj));
-
-    glViewport(0, 0, self->width, self->height);
-}
 
 void ParticleRenderer::initialize_buffers() {
     glCreateVertexArrays(1, &VAO);
@@ -155,19 +116,17 @@ void ParticleRenderer::initialize_shader_program() {
     view_uniform_location = glGetUniformLocation(SHADER_PROGRAM, "view");
     model_uniform_location = glGetUniformLocation(SHADER_PROGRAM, "model");
 
-    glProgramUniformMatrix4fv(SHADER_PROGRAM, proj_uniform_location, 1, GL_FALSE, glm::value_ptr(proj));
+    // glProgramUniformMatrix4fv(SHADER_PROGRAM, proj_uniform_location, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
 ParticleRenderer::ParticleRenderer() {
-    initialize_glfw_window_context();
+    // IMGUI_CHECKVERSION();
+    // ImGui::CreateContext();
+    // ImGuiIO& io = ImGui::GetIO();
+    //(void)io;
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    // ImGui_ImplGlfw_InitForOpenGL(window, true);
+    // ImGui_ImplOpenGL3_Init("#version 460");
     generate_mesh(particle_radius, 36, 18);
     initialize_buffers();
     initialize_shader_program();
@@ -182,8 +141,6 @@ ParticleRenderer::~ParticleRenderer() {
 
     glfwTerminate();
 }
-
-bool ParticleRenderer::should_close() { return glfwWindowShouldClose(window); }
 
 void ParticleRenderer::update_particles(std::vector<Particle>& new_particles) {
     size_t old_size = particles.size();
@@ -215,142 +172,76 @@ void ParticleRenderer::update_particles(std::vector<Particle>& new_particles) {
                          velocities.data());
 }
 
-glm::vec3 ParticleRenderer::cameraPos = glm::vec3(0, 200, 500);
-glm::vec3 ParticleRenderer::cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 ParticleRenderer::cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-double ParticleRenderer::last_mouse_x, ParticleRenderer::last_mouse_y;
-float ParticleRenderer::yaw = 0, ParticleRenderer::pitch = 0;
-
-bool ParticleRenderer::first_mouse = true;
-
-void ParticleRenderer::cursor_pos_callback(GLFWwindow* window, double x_pos, double y_pos) {
-    if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
-        return;
-    }
-    if (first_mouse) {
-        last_mouse_x = x_pos;
-        last_mouse_y = y_pos;
-        first_mouse = false;
-    }
-    double x_offset = last_mouse_x - x_pos;
-    double y_offset = y_pos - last_mouse_y;
-
-    last_mouse_x = x_pos;
-    last_mouse_y = y_pos;
-
-    yaw += static_cast<float>(x_offset) * 0.1f;
-    pitch += static_cast<float>(y_offset) * 0.1f;
-    if (pitch > 89.0f) pitch = 89.0f;
-    if (pitch < -89.0f) pitch = -89.0f;
-
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    cameraFront = glm::normalize(direction);
-}
-
-void ParticleRenderer::process_input() {
-    float speed = 5000 * delta_time;
-
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
-    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
-        if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            first_mouse = true;  // <--- THIS PREVENTS THE JUMP
-        }
-    }
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, 1);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        cameraPos += cameraFront * speed;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        cameraPos -= cameraFront * speed;
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
-    }
-}
-
-void ParticleRenderer::draw() {
+void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
     auto start = glfwGetTime();
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    process_input();
 
     glUseProgram(SHADER_PROGRAM);
 
     model = glm::scale(glm::mat4(1), {particle_radius, particle_radius, 1.0f});
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
     glProgramUniformMatrix4fv(SHADER_PROGRAM, model_uniform_location, 1, GL_FALSE, glm::value_ptr(model));
-    glProgramUniformMatrix4fv(SHADER_PROGRAM, view_uniform_location, 1, GL_FALSE, glm::value_ptr(view));
+    glProgramUniformMatrix4fv(SHADER_PROGRAM, view_uniform_location, 1, GL_FALSE,
+                              glm::value_ptr(camera_render_data.view));
+    glProgramUniformMatrix4fv(SHADER_PROGRAM, proj_uniform_location, 1, GL_FALSE,
+                              glm::value_ptr(camera_render_data.proj));
 
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, 0,
                             static_cast<int>(particles.size()));
 
-    prepare_imgui();
-    ImGui::Render();
-
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+    //    prepare_imgui();
+    //    ImGui::Render();
+    //
+    //    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     auto end = glfwGetTime();
     static double last = 0;
     double now = glfwGetTime();
-    delta_time = end - start;
+    float delta_time = end - start;
     if (now - last > 1.0) {
         std::println("rendering time: {}", delta_time);
         last = now;
     }
 }
 
-void ParticleRenderer::prepare_imgui() {
-    // TODO: temp moved here before rewrite lol
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    ImGui::Begin("Simulation Master Controls");
-
-    if (ImGui::CollapsingHeader("Physical Constants", ImGuiTreeNodeFlags_DefaultOpen)) {
-        //        ImGui::SliderFloat("Smoothing Length (h)", &simulation.H_SMOOTHING, 1.0f, 50.0f);
-        //        ImGui::SliderFloat("Gas Constant", &simulation.GAS_CONSTANT, 0.0f, 5000.0f);
-        //        ImGui::SliderFloat("Rest Density", &simulation.REST_DENSITY, 0.0f, 1000.0f);
-        //        ImGui::SliderFloat("Viscosity", &simulation.VISCOSITY, 0.0f, 1000.0f);
-        //        ImGui::SliderFloat("Gravity", &simulation.GRAVITY, -2000.0f, 2000.0f);
-        //        ImGui::InputFloat("Time Step (dt)", &simulation.DT, 0.0001f, 0.01f, "%.4f");
-    }
-
-    if (ImGui::CollapsingHeader("Boundary &simulation. Bounding Box")) {
-        //       ImGui::DragFloat3("Box Max Corner", &simulation.BOX_END.x, 1.0f, 100.0f, 2000.0f);
-        //       ImGui::Separator();
-        //       ImGui::SliderFloat("Bounciness", &simulation.ENERGY_LOSS, 0.0f, 1.0f);
-        //       ImGui::SliderFloat("Ground Friction", &simulation.FRICTION, 0.0f, 1.0f);
-    }
-
-    ImGui::Separator();
-    auto& p = particles[0];
-    ImGui::Text("density %f , mass %f , velocity %f , pressure %f", p.density, p.mass, glm::length(p.velocity),
-                p.pressure);
-    ImGui::Separator();
-
-    if (ImGui::Button("Reset Simulation")) {
-        //      simulation.regenerate_particles(particles, particle_spacing);
-    }
-
-    ImGui::End();
-}
+// void ParticleRenderer::prepare_imgui() {
+//     // TODO: temp moved here before rewrite lol
+//     ImGui_ImplOpenGL3_NewFrame();
+//     ImGui_ImplGlfw_NewFrame();
+//     ImGui::NewFrame();
+//
+//     ImGui::Begin("Simulation Master Controls");
+//
+//     if (ImGui::CollapsingHeader("Physical Constants", ImGuiTreeNodeFlags_DefaultOpen)) {
+//         //        ImGui::SliderFloat("Smoothing Length (h)", &simulation.H_SMOOTHING, 1.0f, 50.0f);
+//         //        ImGui::SliderFloat("Gas Constant", &simulation.GAS_CONSTANT, 0.0f, 5000.0f);
+//         //        ImGui::SliderFloat("Rest Density", &simulation.REST_DENSITY, 0.0f, 1000.0f);
+//         //        ImGui::SliderFloat("Viscosity", &simulation.VISCOSITY, 0.0f, 1000.0f);
+//         //        ImGui::SliderFloat("Gravity", &simulation.GRAVITY, -2000.0f, 2000.0f);
+//         //        ImGui::InputFloat("Time Step (dt)", &simulation.DT, 0.0001f, 0.01f, "%.4f");
+//     }
+//
+//     if (ImGui::CollapsingHeader("Boundary &simulation. Bounding Box")) {
+//         //       ImGui::DragFloat3("Box Max Corner", &simulation.BOX_END.x, 1.0f, 100.0f, 2000.0f);
+//         //       ImGui::Separator();
+//         //       ImGui::SliderFloat("Bounciness", &simulation.ENERGY_LOSS, 0.0f, 1.0f);
+//         //       ImGui::SliderFloat("Ground Friction", &simulation.FRICTION, 0.0f, 1.0f);
+//     }
+//
+//     ImGui::Separator();
+//     auto& p = particles[0];
+//     ImGui::Text("density %f , mass %f , velocity %f , pressure %f", p.density, p.mass, glm::length(p.velocity),
+//                 p.pressure);
+//     ImGui::Separator();
+//
+//     if (ImGui::Button("Reset Simulation")) {
+//         //      simulation.regenerate_particles(particles, particle_spacing);
+//     }
+//
+//     ImGui::End();
+// }
 
 void ParticleRenderer::generate_mesh(float radius, unsigned int sectorCount, unsigned int stackCount) {
     // TODO: check how this works actually xd
@@ -393,5 +284,3 @@ void ParticleRenderer::generate_mesh(float radius, unsigned int sectorCount, uns
         }
     }
 }
-
-double ParticleRenderer::get_delta_time() { return delta_time; }
