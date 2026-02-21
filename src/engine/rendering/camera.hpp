@@ -7,7 +7,7 @@
 
 struct CameraRenderData {
     glm::mat4 view = glm::translate(glm::mat4(1), {0, 0, 0}),
-              proj = glm::perspective(45.0f, static_cast<float>(800) / static_cast<float>(600), 1.0f, 1000.0f);
+              proj = glm::perspective(45.0f, static_cast<float>(800) / static_cast<float>(600), 1.0f, 10000.0f);
 };
 
 class Camera {
