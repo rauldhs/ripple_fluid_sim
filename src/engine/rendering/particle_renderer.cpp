@@ -15,16 +15,12 @@
 
 void ParticleRenderer::initialize_buffers() {
     glCreateVertexArrays(1, &VAO);
+
     glCreateBuffers(1, &VBO);
+    glCreateBuffers(1, &instanceVelocityVBO);
+    glCreateBuffers(1, &instanceVBO);
     glCreateBuffers(1, &EBO);
 
-    glNamedBufferStorage(VBO, static_cast<int64_t>(vertices.size() * sizeof(float)), vertices.data(), 0);
-    glNamedBufferStorage(EBO, static_cast<int64_t>(indices.size() * sizeof(unsigned int)), indices.data(), 0);
-
-    glEnableVertexArrayAttrib(VAO, 0);
-    glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayAttribBinding(VAO, 0, 0);
-    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, 3 * sizeof(float));
     glVertexArrayElementBuffer(VAO, EBO);
 
     std::vector<glm::vec3> offsets(particles.size());
@@ -33,19 +29,25 @@ void ParticleRenderer::initialize_buffers() {
     std::vector<glm::vec3> velocities(particles.size());
     std::transform(particles.begin(), particles.end(), velocities.begin(), [](auto& a) { return a.velocity; });
 
-    glCreateBuffers(1, &instanceVBO);
+    glNamedBufferStorage(VBO, static_cast<uint64_t>(vertices.size() * sizeof(float)), vertices.data(), 0);
+    glNamedBufferStorage(EBO, static_cast<uint64_t>(indices.size() * sizeof(unsigned int)), indices.data(), 0);
     glNamedBufferStorage(instanceVBO, static_cast<int64_t>(particles.size() * sizeof(glm::vec3)), offsets.data(),
                          GL_DYNAMIC_STORAGE_BIT);
-    glCreateBuffers(1, &instanceVelocityVBO);
     glNamedBufferStorage(instanceVelocityVBO, static_cast<int64_t>(particles.size() * sizeof(glm::vec3)),
                          velocities.data(), GL_DYNAMIC_STORAGE_BIT);
 
+    glEnableVertexArrayAttrib(VAO, 0);
     glEnableVertexArrayAttrib(VAO, 1);
+    glEnableVertexArrayAttrib(VAO, 2);
+
+    glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribBinding(VAO, 0, 0);
+    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, 3 * sizeof(float));
+
     glVertexArrayAttribFormat(VAO, 1, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayAttribBinding(VAO, 1, 1);
     glVertexArrayVertexBuffer(VAO, 1, instanceVBO, 0, 3 * sizeof(float));
 
-    glEnableVertexArrayAttrib(VAO, 2);
     glVertexArrayAttribFormat(VAO, 2, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayAttribBinding(VAO, 2, 2);
     glVertexArrayVertexBuffer(VAO, 2, instanceVelocityVBO, 0, 3 * sizeof(float));
@@ -167,15 +169,15 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
 
     glUseProgram(SHADER_PROGRAM);
 
-    model = glm::scale(glm::mat4(1), {radius, radius, 1.0f});
+    model = glm::scale(glm::mat4(1), {radius, radius, radius});
 
     glProgramUniformMatrix4fv(SHADER_PROGRAM, model_uniform_location, 1, GL_FALSE, glm::value_ptr(model));
     glProgramUniformMatrix4fv(SHADER_PROGRAM, view_uniform_location, 1, GL_FALSE,
                               glm::value_ptr(camera_render_data.view));
 
     glBindVertexArray(VAO);
-    glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, 0,
-                            static_cast<int>(particles.size()));
+    glDrawElementsInstanced(GL_TRIANGLES, static_cast<uint64_t>(indices.size()), GL_UNSIGNED_INT, 0,
+                            static_cast<uint64_t>(particles.size()));
 
     auto end = glfwGetTime();
     static double last = 0;
@@ -187,8 +189,8 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
     }
 }
 
+// https://songho.ca/opengl/gl_sphere.html
 void ParticleRenderer::generate_mesh(float radius, unsigned int sectorCount, unsigned int stackCount) {
-    // TODO: check how this works actually xd
     vertices.clear();
     indices.clear();
 
