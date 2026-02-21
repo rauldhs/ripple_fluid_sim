@@ -3,7 +3,7 @@
 
 #include "engine/core/input_manager.hpp"
 
-void Camera::update(const InputState& input_state) {
+void Camera::update(const InputState& input_state, float delta_time) {
     if (input_state.lock_mouse && !was_locked) {
         first_mouse = true;
     }
@@ -14,7 +14,7 @@ void Camera::update(const InputState& input_state) {
         update_look(input_state.look_x, input_state.look_y);
     }
 
-    update_position(input_state);
+    update_position(input_state, delta_time);
 
     render_data.view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 }
@@ -23,18 +23,18 @@ void Camera::set_aspect_ratio(int width, int height) {
     render_data.proj = glm::perspective(45.0f, static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
 }
 
-void Camera::update_position(const InputState& input_state) {
+void Camera::update_position(const InputState& input_state, float delta_time) {
     if (input_state.move_forward) {
-        cameraPos += cameraFront * speed;
+        cameraPos += cameraFront * speed * delta_time;
     }
     if (input_state.move_backward) {
-        cameraPos -= cameraFront * speed;
+        cameraPos -= cameraFront * speed * delta_time;
     }
     if (input_state.move_left) {
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed * delta_time;
     }
     if (input_state.move_right) {
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed * delta_time;
     }
 }
 void Camera::update_look(double x_pos, double y_pos) {

@@ -12,9 +12,6 @@
 #include "engine/rendering/camera.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 
 void ParticleRenderer::initialize_buffers() {
     glCreateVertexArrays(1, &VAO);
@@ -115,19 +112,10 @@ void ParticleRenderer::initialize_shader_program() {
     proj_uniform_location = glGetUniformLocation(SHADER_PROGRAM, "proj");
     view_uniform_location = glGetUniformLocation(SHADER_PROGRAM, "view");
     model_uniform_location = glGetUniformLocation(SHADER_PROGRAM, "model");
-
-    // glProgramUniformMatrix4fv(SHADER_PROGRAM, proj_uniform_location, 1, GL_FALSE, glm::value_ptr(proj));
 }
 
 ParticleRenderer::ParticleRenderer() {
-    // IMGUI_CHECKVERSION();
-    // ImGui::CreateContext();
-    // ImGuiIO& io = ImGui::GetIO();
-    //(void)io;
-
-    // ImGui_ImplGlfw_InitForOpenGL(window, true);
-    // ImGui_ImplOpenGL3_Init("#version 460");
-    generate_mesh(particle_radius, 36, 18);
+    generate_mesh(radius, 36, 18);
     initialize_buffers();
     initialize_shader_program();
 }
@@ -179,7 +167,7 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
 
     glUseProgram(SHADER_PROGRAM);
 
-    model = glm::scale(glm::mat4(1), {particle_radius, particle_radius, 1.0f});
+    model = glm::scale(glm::mat4(1), {radius, radius, 1.0f});
 
     glProgramUniformMatrix4fv(SHADER_PROGRAM, model_uniform_location, 1, GL_FALSE, glm::value_ptr(model));
     glProgramUniformMatrix4fv(SHADER_PROGRAM, view_uniform_location, 1, GL_FALSE,
@@ -188,11 +176,6 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, 0,
                             static_cast<int>(particles.size()));
-
-    //    prepare_imgui();
-    //    ImGui::Render();
-    //
-    //    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     auto end = glfwGetTime();
     static double last = 0;
@@ -203,43 +186,6 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
         last = now;
     }
 }
-
-// void ParticleRenderer::prepare_imgui() {
-//     // TODO: temp moved here before rewrite lol
-//     ImGui_ImplOpenGL3_NewFrame();
-//     ImGui_ImplGlfw_NewFrame();
-//     ImGui::NewFrame();
-//
-//     ImGui::Begin("Simulation Master Controls");
-//
-//     if (ImGui::CollapsingHeader("Physical Constants", ImGuiTreeNodeFlags_DefaultOpen)) {
-//         //        ImGui::SliderFloat("Smoothing Length (h)", &simulation.H_SMOOTHING, 1.0f, 50.0f);
-//         //        ImGui::SliderFloat("Gas Constant", &simulation.GAS_CONSTANT, 0.0f, 5000.0f);
-//         //        ImGui::SliderFloat("Rest Density", &simulation.REST_DENSITY, 0.0f, 1000.0f);
-//         //        ImGui::SliderFloat("Viscosity", &simulation.VISCOSITY, 0.0f, 1000.0f);
-//         //        ImGui::SliderFloat("Gravity", &simulation.GRAVITY, -2000.0f, 2000.0f);
-//         //        ImGui::InputFloat("Time Step (dt)", &simulation.DT, 0.0001f, 0.01f, "%.4f");
-//     }
-//
-//     if (ImGui::CollapsingHeader("Boundary &simulation. Bounding Box")) {
-//         //       ImGui::DragFloat3("Box Max Corner", &simulation.BOX_END.x, 1.0f, 100.0f, 2000.0f);
-//         //       ImGui::Separator();
-//         //       ImGui::SliderFloat("Bounciness", &simulation.ENERGY_LOSS, 0.0f, 1.0f);
-//         //       ImGui::SliderFloat("Ground Friction", &simulation.FRICTION, 0.0f, 1.0f);
-//     }
-//
-//     ImGui::Separator();
-//     auto& p = particles[0];
-//     ImGui::Text("density %f , mass %f , velocity %f , pressure %f", p.density, p.mass, glm::length(p.velocity),
-//                 p.pressure);
-//     ImGui::Separator();
-//
-//     if (ImGui::Button("Reset Simulation")) {
-//         //      simulation.regenerate_particles(particles, particle_spacing);
-//     }
-//
-//     ImGui::End();
-// }
 
 void ParticleRenderer::generate_mesh(float radius, unsigned int sectorCount, unsigned int stackCount) {
     // TODO: check how this works actually xd

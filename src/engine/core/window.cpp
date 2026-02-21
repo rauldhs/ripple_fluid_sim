@@ -98,3 +98,5 @@ void Window::update() {
     glfwPollEvents();
     glfwSwapBuffers(window);
 }
+
+GLFWwindow* Window::get_handle() { return window; }

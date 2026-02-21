@@ -1,32 +1,45 @@
-#include "app.hpp"
-
 // clang-format off
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <chrono>
+#include <iomanip>
 // clang-format on
+
+#include "app/app.hpp"
+
 #include "engine/core/window.hpp"
 #include "engine/rendering/particle_renderer.hpp"
 
 App::App(const AppSpecification& app_spec)
     : app_spec(std::move(app_spec)),
       input_manager(std::make_shared<InputManager>()),
-      window(app_spec.height, app_spec.width, app_spec.name, input_manager) {
-    simulation.regenerate_particles(particles, particle_spacing);
+      window(app_spec.height, app_spec.width, app_spec.name, input_manager),
+      ui(window.get_handle()) {
+    simulation.regenerate_particles(particles, particle_renderer.radius * 8.0f);
 
     window.add_resize_listener([this](int w, int h) { camera.set_aspect_ratio(w, h); });
     window.add_resize_listener([this](int, int) { particle_renderer.update_proj_matrix(camera.render_data); });
+
+    ui.add_reset_button_listener(
+        [this](void) -> void { simulation.regenerate_particles(particles, particle_renderer.radius * 8.0f); });
 }
 
 App::App() : App(AppSpecification()) {}
 
 void App::run() {
     while (!window.should_close()) {
-        simulation.update_particles(particles, particle_renderer.particle_radius);
+        auto start = std::chrono::high_resolution_clock::now();
+
+        simulation.update_particles(particles, particle_renderer.radius);
         particle_renderer.update_particles(particles);
         particle_renderer.draw(camera.render_data);
 
+        ui.draw(simulation.simulation_data);
         window.update(input_manager->input_state);
 
-        camera.update(input_manager->input_state);
+        camera.update(input_manager->input_state, delta_time);
+
+        auto end = std::chrono::high_resolution_clock::now();
+        delta_time = std::chrono::duration<float>(end - start).count();
     }
 }

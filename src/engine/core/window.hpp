@@ -33,4 +33,5 @@ class Window {
     bool should_close();
     void update();
     void update(const InputState& input_state);
+    GLFWwindow* get_handle();
 };

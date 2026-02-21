@@ -21,14 +21,14 @@ class Camera {
     bool first_mouse = true;
     bool was_locked = true;
 
-    float speed = 5000;
+    float speed = 200;
 
     void update_look(double x_pos, double y_pos);
-    void update_position(const InputState& input_state);
+    void update_position(const InputState& input_state, float delta_time);
 
    public:
     CameraRenderData render_data;
 
-    void update(const InputState& input_state);
+    void update(const InputState& input_state, float delta_time);
     void set_aspect_ratio(int width, int height);
 };

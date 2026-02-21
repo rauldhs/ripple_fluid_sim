@@ -42,7 +42,7 @@ class ParticleRenderer {
     void initialize_shader_program();
 
    public:
-    float particle_radius = 4.0f;
+    float radius = 4.0f;
 
     ParticleRenderer();
     ~ParticleRenderer();
