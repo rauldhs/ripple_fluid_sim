@@ -1,9 +1,13 @@
 #include "engine/simulation/simulation.hpp"
 
+#include <cmath>
+#include <cstddef>
+#include <unordered_map>
 #include <vector>
 
 #include "engine/rendering/particle.hpp"
 #include "engine/simulation/kernels.hpp"
+#include "glm/fwd.hpp"
 
 void SphSimulation::apply_bounding_box_physics(std::vector<Particle> &particles, float radius, float energy_loss_factor,
                                                float ground_friction) {
@@ -38,11 +42,11 @@ void SphSimulation::apply_bounding_box_physics(std::vector<Particle> &particles,
 
 glm::vec3 SphSimulation::get_pressure_force(std::vector<Particle> &particles, Particle &p_i) {
     glm::vec3 sum(0);
-    for (Particle &p_j : particles) {
-        if (&p_i != &p_j) {
-            float dj = std::max(p_j.density, 1e-6f);
-            sum += p_j.mass * ((p_i.pressure + p_j.pressure) / (2 * dj)) *
-                   grad_spiky(p_i.pos - p_j.pos, simulation_data.H_SMOOTHING);
+    for (size_t i : get_neighbors(p_i)) {
+        if (&p_i != &particles[i]) {
+            float dj = std::max(particles[i].density, 1e-6f);
+            sum += particles[i].mass * ((p_i.pressure + particles[i].pressure) / (2 * dj)) *
+                   grad_spiky(p_i.pos - particles[i].pos, simulation_data.H_SMOOTHING);
         }
     }
     return -sum;
@@ -50,21 +54,37 @@ glm::vec3 SphSimulation::get_pressure_force(std::vector<Particle> &particles, Pa
 
 glm::vec3 SphSimulation::get_viscosity_force(std::vector<Particle> &particles, Particle &p_i) {
     glm::vec3 sum(0);
-    for (Particle &p_j : particles) {
-        if (&p_i != &p_j) {
-            float dj = std::max(p_j.density, 1e-6f);
-            sum += p_j.mass * ((p_j.velocity - p_i.velocity) / dj) *
-                   laplacian_viscosity(p_i.pos - p_j.pos, simulation_data.H_SMOOTHING);
+    for (size_t i : get_neighbors(p_i)) {
+        if (&p_i != &particles[i]) {
+            float dj = std::max(particles[i].density, 1e-6f);
+            sum += particles[i].mass * ((particles[i].velocity - p_i.velocity) / dj) *
+                   laplacian_viscosity(p_i.pos - particles[i].pos, simulation_data.H_SMOOTHING);
         }
     }
     return simulation_data.VISCOSITY * sum;
 }
 
+std::vector<size_t> &SphSimulation::get_neighbors(const Particle &p) {
+    auto grid_pos = std::make_tuple(std::floor(p.pos.x / simulation_data.H_SMOOTHING),
+                                    std::floor(p.pos.y / simulation_data.H_SMOOTHING),
+                                    std::floor(p.pos.z / simulation_data.H_SMOOTHING));
+    return particle_grid[grid_pos];
+}
+
 void SphSimulation::update_particles(std::vector<Particle> &particles, float radius) {
+    particle_grid.clear();
+
+    for (size_t i = 0; i < particles.size(); i++) {
+        auto grid_pos = std::make_tuple(std::floor(particles[i].pos.x / simulation_data.H_SMOOTHING),
+                                        std::floor(particles[i].pos.y / simulation_data.H_SMOOTHING),
+                                        std::floor(particles[i].pos.z / simulation_data.H_SMOOTHING));
+        particle_grid[grid_pos].push_back(i);
+    }
+
     for (auto &p : particles) {
         p.density = 0;
-        for (auto &p_j : particles) {
-            p.density += p_j.mass * poly6_kernel(p.pos - p_j.pos, simulation_data.H_SMOOTHING);
+        for (size_t i : get_neighbors(p)) {
+            p.density += particles[i].mass * poly6_kernel(p.pos - particles[i].pos, simulation_data.H_SMOOTHING);
         }
         p.pressure = simulation_data.GAS_CONSTANT * (p.density - simulation_data.REST_DENSITY);
     }
