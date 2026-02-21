@@ -19,7 +19,7 @@ void Camera::update(const InputState& input_state, float delta_time) {
 }
 
 void Camera::set_aspect_ratio(int width, int height) {
-    render_data.proj = glm::perspective(45.0f, static_cast<float>(width) / static_cast<float>(height), 1.0f, 1000.0f);
+    render_data.proj = glm::perspective(45.0f, static_cast<float>(width) / static_cast<float>(height), 1.0f, 10000.0f);
 }
 
 void Camera::update_position(const InputState& input_state, float delta_time) {

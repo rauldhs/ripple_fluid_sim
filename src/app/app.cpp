@@ -1,6 +1,7 @@
 #include "app/app.hpp"
 
 #include <chrono>
+#include <print>
 
 #include "engine/core/window.hpp"
 #include "engine/rendering/particle_renderer.hpp"
@@ -31,12 +32,14 @@ void App::run() {
         particle_renderer.update_particles(particles);
         particle_renderer.draw(camera.render_data);
 
-        ui.draw(simulation.simulation_data);
+        ui.draw(simulation.simulation_data,
+                std::format("FPS {} ({}) , total particles: {}", 1 / delta_time, delta_time, particles.size()));
         window.update(input_manager->input_state);
 
         camera.update(input_manager->input_state, delta_time);
 
         auto end = std::chrono::high_resolution_clock::now();
         delta_time = std::chrono::duration<float>(end - start).count();
+        std::println();
     }
 }
