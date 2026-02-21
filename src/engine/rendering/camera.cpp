@@ -1,4 +1,3 @@
-
 #include "engine/rendering/camera.hpp"
 
 #include "engine/core/input_manager.hpp"

@@ -4,7 +4,6 @@
 #include <random>
 
 #include "engine/rendering/particle_renderer.hpp"
-#include "engine/simulation/kernels.hpp"
 
 struct SphSimulationData {
     float GAS_CONSTANT = 200000.0f;

@@ -1,11 +1,6 @@
-// clang-format off
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
-#include <chrono>
-#include <iomanip>
-// clang-format on
-
 #include "app/app.hpp"
+
+#include <chrono>
 
 #include "engine/core/window.hpp"
 #include "engine/rendering/particle_renderer.hpp"

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "engine/core/input_manager.hpp"
-#include "glm/gtc/type_ptr.hpp"
 
 struct CameraRenderData {
     glm::mat4 view = glm::translate(glm::mat4(1), {0, 0, 0}),

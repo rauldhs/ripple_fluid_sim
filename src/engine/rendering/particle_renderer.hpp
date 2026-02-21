@@ -1,16 +1,9 @@
 #pragma once
 
-// clang-format off
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
-// clang-format on
-
 #include <glm/vec3.hpp>
 #include <vector>
 
 #include "engine/rendering/camera.hpp"
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
 
 struct Particle {
     glm::vec3 pos;

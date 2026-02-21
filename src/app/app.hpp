@@ -1,10 +1,6 @@
 #pragma once
 
-// clang-format off
-#include <glad/gl.h>
-#include <GLFW/glfw3.h>
 #include <memory>
-// clang-format on
 
 #include "engine/core/input_manager.hpp"
 #include "engine/core/window.hpp"
@@ -38,13 +34,13 @@ class App {
     Camera camera;
 
     std::vector<Particle> particles;
-    float delta_time = 0.016;
+    float delta_time = 0.016f;
 
     void prepare_imgui();
 
    public:
     App();
-    App(const AppSpecification& app_spec);
+    explicit App(const AppSpecification& app_spec);
 
     void run();
 };

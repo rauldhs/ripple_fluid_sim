@@ -1,8 +1,12 @@
 #include "engine/rendering/ui.hpp"
 
 #include "engine/simulation/simulation.hpp"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
-// TODO: check for other alternatives for dealing with the GLFWwindow here
+// TODO(me): check for other alternatives for dealing with the GLFWwindow here
+
 Ui::Ui(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
