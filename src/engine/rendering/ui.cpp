@@ -22,7 +22,7 @@ Ui::~Ui() {
     ImGui::DestroyContext();
 }
 
-void Ui::draw(SphSimulationData& simulation_data, std::string optional_text) {
+void Ui::draw(SphSimulationData& simulation_data, const std::string& optional_text) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();

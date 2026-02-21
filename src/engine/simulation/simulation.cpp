@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "engine/rendering/particle.hpp"
 #include "engine/simulation/kernels.hpp"
 
 void SphSimulation::apply_bounding_box_physics(std::vector<Particle> &particles, float radius, float energy_loss_factor,

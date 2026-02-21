@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <random>
 
-#include "engine/rendering/particle_renderer.hpp"
+#include "engine/rendering/particle.hpp"
 
 struct SphSimulationData {
     float GAS_CONSTANT = 200000.0f;
@@ -16,8 +16,8 @@ struct SphSimulationData {
     float ENERGY_LOSS = 0.8f;
     float FRICTION = 0.95f;
 
-    glm::vec3 BOX_START = {0.0f, 0.0f, 0.0f};
-    glm::vec3 BOX_END = {200.0f, 100.0f, 100.0f};
+    glm::vec3 BOX_START = {-100.0f, -50.0f, -50.0f};
+    glm::vec3 BOX_END = {100.0f, 50.0f, 50.0f};
 };
 
 class SphSimulation {

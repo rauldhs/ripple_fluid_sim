@@ -14,9 +14,11 @@ App::App(const AppSpecification& app_spec)
 
     window.add_resize_listener([this](int w, int h) { camera.set_aspect_ratio(w, h); });
     window.add_resize_listener([this](int, int) { particle_renderer.update_proj_matrix(camera.render_data); });
-
     ui.add_reset_button_listener(
         [this](void) -> void { simulation.regenerate_particles(particles, particle_renderer.radius * 8.0f); });
+
+    camera.set_aspect_ratio(app_spec.width, app_spec.height);
+    particle_renderer.update_proj_matrix(camera.render_data);
 }
 
 App::App() : App(AppSpecification()) {}

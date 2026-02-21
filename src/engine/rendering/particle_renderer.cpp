@@ -5,7 +5,6 @@
 
 #include "engine/rendering/particle_renderer.hpp"
 
-#include <cstddef>
 #include <fstream>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -28,18 +27,8 @@ void ParticleRenderer::initialize_buffers() {
 
     glVertexArrayElementBuffer(VAO, EBO);
 
-    std::vector<glm::vec3> offsets(particles.size());
-    std::transform(particles.begin(), particles.end(), offsets.begin(), [](auto& a) { return a.pos; });
-
-    std::vector<glm::vec3> velocities(particles.size());
-    std::transform(particles.begin(), particles.end(), velocities.begin(), [](auto& a) { return a.velocity; });
-
     glNamedBufferStorage(VBO, static_cast<int64_t>(vertices.size() * sizeof(float)), vertices.data(), 0);
     glNamedBufferStorage(EBO, static_cast<int64_t>(indices.size() * sizeof(unsigned int)), indices.data(), 0);
-    glNamedBufferStorage(instanceVBO, static_cast<int64_t>(particles.size() * sizeof(glm::vec3)), offsets.data(),
-                         GL_DYNAMIC_STORAGE_BIT);
-    glNamedBufferStorage(instanceVelocityVBO, static_cast<int64_t>(particles.size() * sizeof(glm::vec3)),
-                         velocities.data(), GL_DYNAMIC_STORAGE_BIT);
 
     glEnableVertexArrayAttrib(VAO, 0);
     glEnableVertexArrayAttrib(VAO, 1);
@@ -119,12 +108,18 @@ void ParticleRenderer::initialize_shader_program() {
     proj_uniform_location = glGetUniformLocation(SHADER_PROGRAM, "proj");
     view_uniform_location = glGetUniformLocation(SHADER_PROGRAM, "view");
     model_uniform_location = glGetUniformLocation(SHADER_PROGRAM, "model");
+
+    glProgramUniformMatrix4fv(
+        SHADER_PROGRAM, proj_uniform_location, 1, GL_FALSE,
+        glm::value_ptr(glm::perspective(45.0f, static_cast<float>(800) / static_cast<float>(600), 1.0f, 1000.0f)));
 }
 
 ParticleRenderer::ParticleRenderer() {
     generate_mesh(radius, 36, 18);
     initialize_buffers();
     initialize_shader_program();
+
+    glEnable(GL_DEPTH_TEST);
 }
 ParticleRenderer::~ParticleRenderer() {
     glDeleteProgram(SHADER_PROGRAM);
@@ -133,29 +128,26 @@ ParticleRenderer::~ParticleRenderer() {
     glDeleteBuffers(1, &instanceVBO);
     glDeleteBuffers(1, &EBO);
     glDeleteVertexArrays(1, &VAO);
-
-    glfwTerminate();
 }
 
-void ParticleRenderer::update_particles(std::vector<Particle>& new_particles) {
-    size_t old_size = particles.size();
-    particles = new_particles;
-
+void ParticleRenderer::update_particles(std::vector<Particle>& particles) {
     std::vector<glm::vec3> offsets(particles.size());
     std::transform(particles.begin(), particles.end(), offsets.begin(), [](auto& a) { return a.pos; });
 
     std::vector<glm::vec3> velocities(particles.size());
     std::transform(particles.begin(), particles.end(), velocities.begin(), [](auto& a) { return a.velocity; });
 
-    if (new_particles.size() > old_size) {
+    current_total_particles = static_cast<unsigned int>(particles.size());
+    if (current_total_particles > particle_buffer_capacity) {
+        particle_buffer_capacity = 2 * current_total_particles;
         glDeleteBuffers(1, &instanceVBO);
         glCreateBuffers(1, &instanceVBO);
         glDeleteBuffers(1, &instanceVelocityVBO);
         glCreateBuffers(1, &instanceVelocityVBO);
 
-        glNamedBufferStorage(instanceVBO, static_cast<int>(particles.size() * 2 * 2 * sizeof(glm::vec3)), nullptr,
+        glNamedBufferStorage(instanceVBO, static_cast<int>(particle_buffer_capacity * sizeof(glm::vec3)), nullptr,
                              GL_DYNAMIC_STORAGE_BIT);
-        glNamedBufferStorage(instanceVelocityVBO, static_cast<int>(particles.size() * 2 * 2 * sizeof(glm::vec3)),
+        glNamedBufferStorage(instanceVelocityVBO, static_cast<int>(particle_buffer_capacity * sizeof(glm::vec3)),
                              nullptr, GL_DYNAMIC_STORAGE_BIT);
 
         glVertexArrayVertexBuffer(VAO, 1, instanceVBO, 0, 3 * sizeof(float));
@@ -182,7 +174,7 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
 
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, 0,
-                            static_cast<int>(particles.size()));
+                            static_cast<int>(current_total_particles));
 
     auto end = glfwGetTime();
     static double last = 0;

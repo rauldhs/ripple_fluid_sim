@@ -14,6 +14,6 @@ class Ui {
     explicit Ui(GLFWwindow* window);
     ~Ui();
 
-    void draw(SphSimulationData& simulation_data, std::string optional_text = "");
+    void draw(SphSimulationData& simulation_data, const std::string& optional_text = "");
     void add_reset_button_listener(std::function<void(void)> callback);
 };

@@ -4,15 +4,7 @@
 #include <vector>
 
 #include "engine/rendering/camera.hpp"
-
-struct Particle {
-    glm::vec3 pos;
-    glm::vec3 velocity = {0, 0, 0};
-    glm::vec3 accerelation = {0, 0, 0};
-    float mass = 10.0f;
-    float pressure = 0.0f;
-    float density = 0.0f;
-};
+#include "engine/rendering/particle.hpp"
 
 class ParticleRenderer {
    private:
@@ -27,7 +19,7 @@ class ParticleRenderer {
     std::vector<float> vertices;
     std::vector<unsigned int> indices;
 
-    std::vector<Particle> particles = {Particle{{0, 0, 0}}};
+    unsigned int current_total_particles = 0, particle_buffer_capacity = 0;
 
     void generate_mesh(float radius, unsigned int sectorCount, unsigned int stackCount);
 
