@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <glm/glm.hpp>
 #include <random>
 #include <vector>
@@ -32,12 +33,23 @@ struct SphSimulationData {
 class SphSimulation {
    private:
     std::default_random_engine generator;
+    unsigned int step_count = 0;
+    std::vector<std::vector<size_t>> neighbors_cache;
+    std::unordered_map<std::tuple<int, int, int>, std::vector<size_t>, TupleHash> particle_grid;
+
     void apply_bounding_box_physics(std::vector<Particle> &particles, float radius, float energy_loss_factor,
                                     float ground_friction);
-    glm::vec3 get_pressure_force(std::vector<Particle> &particles, Particle &p_i);
-    glm::vec3 get_viscosity_force(std::vector<Particle> &particles, Particle &p_i);
-    std::vector<size_t> &get_neighbors(const Particle &p);
-    std::unordered_map<std::tuple<int, int, int>, std::vector<size_t>, TupleHash> particle_grid;
+    glm::vec3 get_pressure_force(std::vector<Particle> &particles, size_t index);
+    glm::vec3 get_viscosity_force(std::vector<Particle> &particles, size_t index);
+    void get_neighbors(const Particle &p, std::vector<size_t> &result);
+    void z_sort_particles(std::vector<Particle> &particles);
+
+    uint32_t expand_bits(uint32_t x);
+
+    // NOTE: the ints must be at most 10 bits long,the rest is used for interleaving
+    // this is some black magic shit, basically makes the bits be like x1y1z1 x2y2z2....
+    uint32_t morton_code(uint32_t x, uint32_t y, uint32_t z);
+    void z_insertion_sort(std::vector<std::pair<uint32_t, size_t>> &vec);
 
    public:
     SphSimulationData simulation_data;

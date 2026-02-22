@@ -4,7 +4,7 @@
 #include "app/app.hpp"
 
 int main() {
-    feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+    // feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 
     AppSpecification app_spec = {.name = "fluid_sim"};
 

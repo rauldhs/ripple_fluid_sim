@@ -4,10 +4,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "engine/core/input_manager.hpp"
+#include "glm/ext/vector_float3.hpp"
 
 struct CameraRenderData {
     glm::mat4 view = glm::translate(glm::mat4(1), {0, 0, 0}),
               proj = glm::perspective(45.0f, static_cast<float>(800) / static_cast<float>(600), 1.0f, 10000.0f);
+    glm::vec3 pos = {0, 0, 0};
 };
 
 class Camera {

@@ -40,6 +40,5 @@ void App::run() {
 
         auto end = std::chrono::high_resolution_clock::now();
         delta_time = std::chrono::duration<float>(end - start).count();
-        std::println();
     }
 }

@@ -10,6 +10,9 @@ uniform mat4 proj;
 
 out vec3 velocity;
 
+out vec3 frag_normal;
+out vec3 frag_pos;
+
 void main(){
     vec3 scaledVertex = vec3(model * vec4(aPos, 1.0));
     vec3 worldPos = scaledVertex + aOffset;
@@ -17,4 +20,7 @@ void main(){
 
 
     velocity = aVelocity;
+
+    frag_normal = normalize(scaledVertex); 
+    frag_pos = worldPos;
 }

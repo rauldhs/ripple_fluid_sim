@@ -10,7 +10,10 @@
 #include "engine/simulation/simulation.hpp"
 
 struct GlfwContext {
-    GlfwContext() { glfwInit(); }
+    GlfwContext() {
+        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+        glfwInit();
+    }
     ~GlfwContext() { glfwTerminate(); }
 };
 

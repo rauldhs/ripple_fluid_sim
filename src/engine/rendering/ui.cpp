@@ -1,5 +1,6 @@
 #include "engine/rendering/ui.hpp"
 
+#include "GLFW/glfw3.h"
 #include "engine/simulation/simulation.hpp"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -11,7 +12,6 @@ Ui::Ui(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
@@ -32,7 +32,7 @@ void Ui::draw(SphSimulationData& simulation_data, const std::string& optional_te
     if (ImGui::CollapsingHeader("Physical Constants", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::SliderFloat("Smoothing Length (h)", &simulation_data.H_SMOOTHING, 1.0f, 50.0f);
         ImGui::SliderFloat("Gas Constant", &simulation_data.GAS_CONSTANT, 0.0f, 5000.0f);
-        ImGui::SliderFloat("Rest Density", &simulation_data.REST_DENSITY, 0.0f, 1000.0f);
+        ImGui::SliderFloat("Rest Density", &simulation_data.REST_DENSITY, 0.0f, 10.0f);
         ImGui::SliderFloat("Viscosity", &simulation_data.VISCOSITY, 0.0f, 1000.0f);
         ImGui::SliderFloat("Gravity", &simulation_data.GRAVITY, -2000.0f, 2000.0f);
         ImGui::InputFloat("Time Step (dt)", &simulation_data.DT, 0.0001f, 0.01f, "%.4f");

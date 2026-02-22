@@ -120,6 +120,7 @@ ParticleRenderer::ParticleRenderer() {
     initialize_shader_program();
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_PROGRAM_POINT_SIZE);
 }
 ParticleRenderer::~ParticleRenderer() {
     glDeleteProgram(SHADER_PROGRAM);
@@ -171,6 +172,9 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
     glProgramUniformMatrix4fv(SHADER_PROGRAM, model_uniform_location, 1, GL_FALSE, glm::value_ptr(model));
     glProgramUniformMatrix4fv(SHADER_PROGRAM, view_uniform_location, 1, GL_FALSE,
                               glm::value_ptr(camera_render_data.view));
+
+    glProgramUniform3fv(SHADER_PROGRAM, glGetUniformLocation(SHADER_PROGRAM, "cam_pos"), 1,
+                        glm::value_ptr(camera_render_data.pos));
 
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, 0,

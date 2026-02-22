@@ -35,6 +35,8 @@ void Camera::update_position(const InputState& input_state, float delta_time) {
     if (input_state.move_right) {
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed * delta_time;
     }
+
+    render_data.pos = cameraPos;
 }
 void Camera::update_look(double x_pos, double y_pos) {
     if (first_mouse) {
