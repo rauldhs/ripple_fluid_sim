@@ -33,7 +33,7 @@ void App::run() {
         particle_renderer.draw(camera.render_data);
 
         ui.draw(simulation.simulation_data,
-                std::format("FPS {} ({}) , total particles: {}", 1 / delta_time, delta_time, particles.size()));
+                std::format("FPS {} ({}) , total particles: {}", 1 / delta_time, delta_time * 1000, particles.size()));
         window.update(input_manager->input_state);
 
         camera.update(input_manager->input_state, delta_time);

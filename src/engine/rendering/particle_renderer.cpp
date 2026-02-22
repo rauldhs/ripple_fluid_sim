@@ -9,6 +9,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <print>
+#include <ratio>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -185,7 +186,7 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
     double now = glfwGetTime();
     float delta_time = static_cast<float>(end - start);
     if (now - last > 1.0) {
-        std::println("rendering time: {}", delta_time);
+        std::println("rendering time: {}", delta_time * 1000);
         last = now;
     }
 }

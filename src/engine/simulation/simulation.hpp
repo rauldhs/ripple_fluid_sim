@@ -18,16 +18,18 @@ struct TupleHash {
 struct SphSimulationData {
     float GAS_CONSTANT = 200000.0f;
     float REST_DENSITY = 0.000001f;
-    float VISCOSITY = 0.5f;
+    float VISCOSITY = 5.0f;
     float GRAVITY = 1000.0f;
-    float H_SMOOTHING = 16.0f;
+    float H_SMOOTHING = 32.0f;
     float DT = 0.007f;
 
     float ENERGY_LOSS = 0.8f;
     float FRICTION = 0.95f;
 
-    glm::vec3 BOX_START = {-300.0f, -100.0f, -100.0f};
-    glm::vec3 BOX_END = {300.0f, 100.0f, 100.0f};
+    float TENSION_COEFICIENT = 0.001f;
+
+    glm::vec3 BOX_START = {-500.0f, -100.0f, -300.0f};
+    glm::vec3 BOX_END = {500.0f, 1000.0f, 500.0f};
 };
 
 class SphSimulation {
@@ -41,6 +43,7 @@ class SphSimulation {
                                     float ground_friction);
     glm::vec3 get_pressure_force(std::vector<Particle> &particles, size_t index);
     glm::vec3 get_viscosity_force(std::vector<Particle> &particles, size_t index);
+    glm::vec3 get_surface_tension_force(std::vector<Particle> &particles, size_t i);
     void get_neighbors(const Particle &p, std::vector<size_t> &result);
     void z_sort_particles(std::vector<Particle> &particles);
 
