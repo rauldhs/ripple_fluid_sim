@@ -8,8 +8,6 @@
 #include <fstream>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <print>
-#include <ratio>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -61,8 +59,8 @@ void ParticleRenderer::initialize_shader_program() {
     unsigned int VERTEX_SHADER = glCreateShader(GL_VERTEX_SHADER);
     unsigned int FRAGMENT_SHADER = glCreateShader(GL_FRAGMENT_SHADER);
 
-    std::string vertex_shader_file = read_file("shaders/vertex_shader.glsl");
-    std::string fragment_shader_file = read_file("shaders/fragment_shader.glsl");
+    std::string vertex_shader_file = read_file("shaders/particle_vertex_shader.glsl");
+    std::string fragment_shader_file = read_file("shaders/particle_fragment_shader.glsl");
 
     const char* vertex_shader_source = vertex_shader_file.c_str();
     const char* fragment_shader_source = fragment_shader_file.c_str();
@@ -162,8 +160,6 @@ void ParticleRenderer::update_particles(std::vector<Particle>& particles) {
 }
 
 void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
-    auto start = glfwGetTime();
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(SHADER_PROGRAM);
@@ -180,15 +176,6 @@ void ParticleRenderer::draw(const CameraRenderData& camera_render_data) {
     glBindVertexArray(VAO);
     glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(indices.size()), GL_UNSIGNED_INT, 0,
                             static_cast<int>(current_total_particles));
-
-    auto end = glfwGetTime();
-    static double last = 0;
-    double now = glfwGetTime();
-    float delta_time = static_cast<float>(end - start);
-    if (now - last > 1.0) {
-        std::println("rendering time: {}", delta_time * 1000);
-        last = now;
-    }
 }
 
 // https://songho.ca/opengl/gl_sphere.html

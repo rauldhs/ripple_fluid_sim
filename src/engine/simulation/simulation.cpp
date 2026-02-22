@@ -219,5 +219,5 @@ void SphSimulation::regenerate_particles(std::vector<Particle> &particles, float
         }
     }
 
-    neighbors_cache.resize(particles.size() + 1);
+    neighbors_cache.resize(particles.size());
 }

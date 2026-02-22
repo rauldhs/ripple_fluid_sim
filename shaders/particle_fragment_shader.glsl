@@ -13,9 +13,9 @@ vec3 hsv2rgb(vec3 c) {
 
 void main() {
     float speed = length(velocity);
-    float hue = mix(0.66, 0.0, clamp(speed * 2.0, 0.0, 1.0));
-    float saturation = mix(0.3, 1.0, clamp(speed * 0.5, 0.0, 1.0));
-    float brightness = mix(0.6, 1.0, clamp(speed * 0.3, 0.0, 1.0));
+    float hue = mix(0.66, 0.0, clamp(speed * 0.02, 0.0, 1.0));
+    float saturation = mix(0.3, 1.0, clamp(speed * 0.005, 0.0, 1.0));
+    float brightness = mix(0.6, 1.0, clamp(speed * 0.003, 0.0, 1.0));
     vec3 color = hsv2rgb(vec3(hue, saturation, brightness));
 
     vec3 view_dir = normalize(cam_pos - frag_pos);

@@ -1,7 +1,6 @@
 #include "app/app.hpp"
 
 #include <chrono>
-#include <print>
 
 #include "engine/core/window.hpp"
 #include "engine/rendering/particle_renderer.hpp"
@@ -9,12 +8,15 @@
 App::App(const AppSpecification& app_spec)
     : app_spec(std::move(app_spec)),
       input_manager(std::make_shared<InputManager>()),
-      window(app_spec.height, app_spec.width, app_spec.name, input_manager),
+      window(app_spec.height, app_spec.width, app_spec.name),
       ui(window.get_handle()) {
     simulation.regenerate_particles(particles, particle_renderer.radius * 8.0f);
 
     window.add_resize_listener([this](int w, int h) { camera.set_aspect_ratio(w, h); });
     window.add_resize_listener([this](int, int) { particle_renderer.update_proj_matrix(camera.render_data); });
+    window.add_cursor_pos_listener([this](double x, double y) { input_manager->update_mouse_pos(x, y); });
+    window.add_key_action_listener([this](int key, int action) { input_manager->update_key(key, action); });
+
     ui.add_reset_button_listener(
         [this](void) -> void { simulation.regenerate_particles(particles, particle_renderer.radius * 8.0f); });
 
@@ -29,6 +31,7 @@ void App::run() {
         auto start = std::chrono::high_resolution_clock::now();
 
         simulation.update_particles(particles, particle_renderer.radius);
+
         particle_renderer.update_particles(particles);
         particle_renderer.draw(camera.render_data);
 

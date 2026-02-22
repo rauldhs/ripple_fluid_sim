@@ -17,6 +17,14 @@ void Window::add_resize_listener(std::function<void(int width, int height)> call
     resize_listeners.push_back(std::move(callback));
 }
 
+void Window::add_cursor_pos_listener(std::function<void(double, double)> callback) {
+    cursor_pos_listeners.push_back(std::move(callback));
+}
+
+void Window::add_key_action_listener(std::function<void(int, int)> callback) {
+    key_action_listeners.push_back(std::move(callback));
+}
+
 void Window::resize_callback(GLFWwindow* window, int new_width, int new_height) {
     auto* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
@@ -27,7 +35,7 @@ void Window::resize_callback(GLFWwindow* window, int new_width, int new_height) 
     for (auto& callback : self->resize_listeners) callback(self->width, self->height);
 }
 
-Window::Window(int height, int width, std::string name, std::shared_ptr<InputManager> input_manager = nullptr)
+Window::Window(int height, int width, std::string name)
     : input_manager(input_manager), width(width), height(height), name(name) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -64,15 +72,19 @@ Window::~Window() {
 
 void Window::cursor_pos_callback(GLFWwindow* window, double new_x, double new_y) {
     Window* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
-    if (self && self->input_manager) {
-        self->input_manager->update_mouse_pos(new_x, new_y);
+    if (self) {
+        for (auto& callback : self->cursor_pos_listeners) {
+            callback(new_x, new_y);
+        }
     }
 }
 
 void Window::key_callback(GLFWwindow* window, int key, int, int action, int) {
     Window* self = static_cast<Window*>(glfwGetWindowUserPointer(window));
-    if (self && self->input_manager) {
-        self->input_manager->update_key(key, action);
+    if (self) {
+        for (auto& callback : self->key_action_listeners) {
+            callback(key, action);
+        }
     }
 }
 

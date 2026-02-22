@@ -33,6 +33,7 @@ class App {
     Ui ui;
 
     ParticleRenderer particle_renderer;
+
     SphSimulation simulation;
     Camera camera;
 
