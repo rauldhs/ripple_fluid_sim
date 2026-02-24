@@ -23,13 +23,11 @@ void InputManager::update_key(int key, int action) {
         case GLFW_KEY_S:
             input_state.move_backward = is_pressed;
             break;
-        case GLFW_KEY_M:
-            input_state.unlock_mouse = is_pressed;
-            input_state.lock_mouse = !is_pressed;
+        case GLFW_KEY_L:
+            if (is_pressed) input_state.lock_mouse = true;
             break;
-        case GLFW_KEY_N:
-            input_state.unlock_mouse = !is_pressed;
-            input_state.lock_mouse = is_pressed;
+        case GLFW_KEY_U:
+            if (is_pressed) input_state.lock_mouse = false;
             break;
         case GLFW_KEY_ESCAPE:
             input_state.close_app = is_pressed;

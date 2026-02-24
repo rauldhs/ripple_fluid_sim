@@ -9,8 +9,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include "engine/core/input_manager.hpp"
-
 bool Window::should_close() { return glfwWindowShouldClose(window); }
 
 void Window::add_resize_listener(std::function<void(int width, int height)> callback) {
@@ -35,8 +33,7 @@ void Window::resize_callback(GLFWwindow* window, int new_width, int new_height) 
     for (auto& callback : self->resize_listeners) callback(self->width, self->height);
 }
 
-Window::Window(int height, int width, std::string name)
-    : input_manager(input_manager), width(width), height(height), name(name) {
+Window::Window(int height, int width, std::string name) : width(width), height(height), name(name) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -90,12 +87,8 @@ void Window::key_callback(GLFWwindow* window, int key, int, int action, int) {
 
 void Window::update(const InputState& input_state) {
     if (input_state.lock_mouse) {
-        if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
-    }
-
-    if (input_state.unlock_mouse) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    } else {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 

@@ -5,7 +5,6 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 #include <functional>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +13,6 @@
 class Window {
    private:
     GLFWwindow* window;
-    std::shared_ptr<InputManager> input_manager;
     int width, height;
     std::string name;
 

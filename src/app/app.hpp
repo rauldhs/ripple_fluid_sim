@@ -27,7 +27,7 @@ class App {
     AppSpecification app_spec;
     GlfwContext glfw_context;
 
-    std::shared_ptr<InputManager> input_manager;
+    InputManager input_manager;
     Window window;
 
     Ui ui;

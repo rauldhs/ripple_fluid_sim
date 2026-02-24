@@ -3,7 +3,6 @@
 struct InputState {
     double look_x, look_y;
     bool lock_mouse = true;
-    bool unlock_mouse;
 
     bool move_left;
     bool move_right;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 4.2)
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_CXX_COMPILER clang++)
-project(fluid_sim VERSION 1.0 LANGUAGES C CXX)
+project(ripple VERSION 1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -63,7 +63,7 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 
 add_library(glad STATIC external/glad/src/gl.c)
-target_include_directories(glad PUBLIC external/glad/include external/stb)
+target_include_directories(glad PUBLIC external/glad/include)
 
 add_library(imgui STATIC
     external/imgui/imgui.cpp

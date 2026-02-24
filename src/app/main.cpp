@@ -6,7 +6,7 @@
 int main() {
     // feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 
-    AppSpecification app_spec = {.name = "fluid_sim"};
+    AppSpecification app_spec = {.name = "Ripple"};
 
     App app(app_spec);
     app.run();
