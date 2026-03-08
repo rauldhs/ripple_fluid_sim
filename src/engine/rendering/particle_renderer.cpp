@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "config.h"
 #include "engine/rendering/camera.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -59,8 +60,8 @@ void ParticleRenderer::initialize_shader_program() {
     unsigned int VERTEX_SHADER = glCreateShader(GL_VERTEX_SHADER);
     unsigned int FRAGMENT_SHADER = glCreateShader(GL_FRAGMENT_SHADER);
 
-    std::string vertex_shader_file = read_file("shaders/particle_vertex_shader.glsl");
-    std::string fragment_shader_file = read_file("shaders/particle_fragment_shader.glsl");
+    std::string vertex_shader_file = read_file(std::string(SOURCE_DIR) + "/shaders/particle_vertex_shader.glsl");
+    std::string fragment_shader_file = read_file(std::string(SOURCE_DIR) + "/shaders/particle_fragment_shader.glsl");
 
     const char* vertex_shader_source = vertex_shader_file.c_str();
     const char* fragment_shader_source = fragment_shader_file.c_str();

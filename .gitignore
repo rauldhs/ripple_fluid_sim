@@ -72,3 +72,4 @@ Testing/
 external/
 
 imgui.ini
+src/config.h

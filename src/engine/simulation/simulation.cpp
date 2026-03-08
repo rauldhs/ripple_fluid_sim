@@ -18,6 +18,7 @@ void SphSimulation::apply_bounding_box_physics(std::vector<Particle> &particles,
             p.pos.y = simulation_data.BOX_START.y + radius;
             p.velocity.y *= -energy_loss_factor;
             p.velocity.x *= ground_friction;
+            p.velocity.z *= ground_friction;
         }
         if (p.pos.x <= simulation_data.BOX_START.x + radius) {
             p.pos.x = simulation_data.BOX_START.x + radius;

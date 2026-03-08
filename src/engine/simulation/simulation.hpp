@@ -32,8 +32,12 @@ struct SphSimulationData {
     glm::vec3 BOX_END = {500.0f, 1000.0f, 500.0f};
 };
 
+class SphSimulationTestBase;
+
 class SphSimulation {
    private:
+    friend class SphSimulationTestBase;
+
     std::default_random_engine generator;
     unsigned int step_count = 0;
     std::vector<std::vector<size_t>> neighbors_cache;
